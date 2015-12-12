@@ -1,2 +1,2 @@
 download: main.c
-	cc main.c -Wall -o Download
+	cc -Wall -o Download main.c auxiliar.c
