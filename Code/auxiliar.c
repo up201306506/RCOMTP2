@@ -3,10 +3,15 @@
 #include <errno.h> 
 #include <netdb.h> 
 #include <string.h>
+#include <strings.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <regex.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/socket.h>
+
 
 #include "auxiliar.h"
 
@@ -140,4 +145,35 @@ int parseURL_aux(char * buffer, char * result, char escape){
 	}
 	
 	return -1;
+}
+
+
+
+int connectSocket(char * IP, int port) {
+	int sockfd;
+	struct sockaddr_in server_addr;
+
+	// server address handling
+	bzero((char*) &server_addr, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = inet_addr(IP); /*32 bit Internet address network byte ordered*/
+	server_addr.sin_port = htons(port); /*server TCP port must be network byte ordered */
+
+	// open an TCP socket
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		perror("socket()");
+		return -1;
+	}
+
+	// connect to the server
+	if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr))
+			< 0) {
+		perror("connect()");
+		return -1;
+	}
+
+	return sockfd;
+}
+void disconnectSocket(int sockfd) {
+	close(sockfd);
 }

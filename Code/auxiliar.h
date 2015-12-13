@@ -4,7 +4,8 @@
 #define BUF_STRINGSIZE   256
 #define IP_STRINGSIZE	16
 
-#define FTP_PORT = 21;
+#define FTP_PORT 21
+
 
 struct url_components{
 	char user[BUF_STRINGSIZE];
@@ -12,6 +13,9 @@ struct url_components{
 	char host[BUF_STRINGSIZE];
 	char path[BUF_STRINGSIZE];
 	char IP[IP_STRINGSIZE];
+	
+	int socket_fd;
+	int data_socket_fd;
 	
 	int mode;
 };
@@ -24,5 +28,7 @@ int checkURL(char* url, struct url_components* result);
 int parseURL(char * url, struct url_components * data);
 int parseURL_aux(char * buffer, char * result, char escape);
 
+int connectSocket(char * IP, int port);
+void disconnectSocket(int sockfd);
 
 #endif

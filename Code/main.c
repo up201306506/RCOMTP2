@@ -36,10 +36,21 @@ int main(int argc, char** argv){
 	printf("Pass: %s \n",data.password);	
 	}
 	
-	/* Retrieve GetIP*/
+	/* Retrieve IP from DNS*/
 	if(getIP(data.host, data.IP) < 0)
 		return -1;
 	
+	/* Connect a Socket */
+	data.socket_fd = connectSocket(data.IP, FTP_PORT);
+	if (data.socket_fd  < 0) {
+		printf("WARNING: Could not connect socket.\n");
+		return 1;
+	}
 	
+	/* Disconnect Socket */
+	disconnectSocket(data.socket_fd);
+	
+	
+	puts("Done");
 	return 0;
 }
