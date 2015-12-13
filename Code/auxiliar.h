@@ -36,7 +36,7 @@ int ftpSendMessage(int socket_fd, char * message, int size);
 int ftpReadMessage(int socket_fd, char * message, int size);
 
 
-int loginFTP(char * user,char * password);
+int ftpLogin(char * user,char * password, int socket_fd);
 
 
 void ftpAbort(int socket_fd, int socket_data);

@@ -31,6 +31,8 @@ int main(int argc, char** argv){
 	if(parseURL(argv[1], &data))
 		return -1;
 	
+	
+	puts("\n --- Info --- ");
 	if (data.mode  == 1){
 	printf("User: %s \n", data.user);
 	printf("Pass: %s \n",data.password);	
@@ -49,7 +51,8 @@ int main(int argc, char** argv){
 	}
 	
 	/* Login */
-	if (loginFTP(data.user, data.password)) {
+	puts("\n --- Logging in --- ");
+	if (ftpLogin(data.user, data.password, data.socket_fd)) {
 		printf("WARNING: Could not login");
 		ftpAbort(data.socket_fd, data.data_socket_fd);
 		return -1;

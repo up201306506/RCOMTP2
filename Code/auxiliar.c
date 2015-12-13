@@ -182,8 +182,31 @@ void disconnectSocket(int sockfd) {
 	close(sockfd);
 }
 
-int loginFTP(char * user,char * password){
-	//char buffer[BUF_LARGERSIZE];
+int ftpLogin(char * user,char * password, int socket_fd){
+	char buffer[BUF_LARGERSIZE];
+	
+	/* username */
+	sprintf(buffer, "user %s\n", user);
+	if (ftpSendMessage(socket_fd, buffer, strlen(buffer))< 0) {
+		printf("WARNING: Error sending username\n");
+		return -1;
+	}
+	if (ftpReadMessage(socket_fd, buffer, sizeof(buffer)) <0) {
+		printf(	"WARNING: Error receiving response to username\n");
+		return -1;
+	}
+
+	/* password */
+	sprintf(buffer, "pass %s\n", password);
+	if (ftpSendMessage(socket_fd, buffer, strlen(buffer))< 0) {
+		printf("WARNING: Error sending password\n");
+		return 1;
+	}
+	if (ftpReadMessage(socket_fd, buffer, sizeof(buffer))<0) 
+	{
+		printf(	"WARNING: Error receiving response to password\n");
+		return 1;
+	}
 	
 	return 0;
 }
@@ -201,13 +224,11 @@ int ftpSendMessage(int socket_fd, char * message, int size){
 }
 int ftpReadMessage(int socket_fd, char * message, int size){
 	int res;
-	memset(message, 0, size);
 	res = read(socket_fd, message, size);
-	puts(message);
 	return res;
 }
 void ftpAbort(int socket_fd, int socket_data){
-	puts("Aborting sockets");
+	puts("\n !!! ABORTED !!! ");
 	if(socket_fd) close(socket_fd);
 	if(socket_data) close(socket_data);
 }
