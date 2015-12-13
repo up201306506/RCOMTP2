@@ -147,8 +147,6 @@ int parseURL_aux(char * buffer, char * result, char escape){
 	return -1;
 }
 
-
-
 int connectSocket(char * IP, int port) {
 	int sockfd;
 	struct sockaddr_in server_addr;
@@ -171,9 +169,45 @@ int connectSocket(char * IP, int port) {
 		perror("connect()");
 		return -1;
 	}
+	
+	char temp[BUF_LARGERSIZE];
+	if (ftpReadMessage(sockfd, temp, sizeof(temp)) < 0 ) {
+		printf("WARNING: Couldn't Read Response to socketing.\n");
+		return -1;
+	}
 
 	return sockfd;
 }
 void disconnectSocket(int sockfd) {
 	close(sockfd);
+}
+
+int loginFTP(char * user,char * password){
+	//char buffer[BUF_LARGERSIZE];
+	
+	return 0;
+}
+
+int ftpSendMessage(int socket_fd, char * message, int size){
+	int sent = write(socket_fd, message, size);
+	if(sent != size){
+		printf("WARNING: Error while sending information to FTP server\n");
+		printf("message was: %s\n", message);
+		printf("Bytes sent: %d\n", sent);
+		return -1;
+	}
+	
+	return 0;
+}
+int ftpReadMessage(int socket_fd, char * message, int size){
+	int res;
+	memset(message, 0, size);
+	res = read(socket_fd, message, size);
+	puts(message);
+	return res;
+}
+void ftpAbort(int socket_fd, int socket_data){
+	puts("Aborting sockets");
+	if(socket_fd) close(socket_fd);
+	if(socket_data) close(socket_data);
 }

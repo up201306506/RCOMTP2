@@ -7,8 +7,8 @@
 
 #include "auxiliar.h"
 
-//./Download ftp://[user:pass@]example.com/wat
-//./Download ftp://example.com/wat
+//./Download ftp://[user:pass@]example.com/file.jpg
+//./Download ftp://example.com/file.jpg
 
 
 int main(int argc, char** argv){
@@ -44,12 +44,21 @@ int main(int argc, char** argv){
 	data.socket_fd = connectSocket(data.IP, FTP_PORT);
 	if (data.socket_fd  < 0) {
 		printf("WARNING: Could not connect socket.\n");
-		return 1;
+		ftpAbort(data.socket_fd, data.data_socket_fd);
+		return -1;
 	}
+	
+	/* Login */
+	if (loginFTP(data.user, data.password)) {
+		printf("WARNING: Could not login");
+		ftpAbort(data.socket_fd, data.data_socket_fd);
+		return -1;
+	}
+	
 	
 	/* Disconnect Socket */
 	disconnectSocket(data.socket_fd);
-	
+	disconnectSocket(data.data_socket_fd);
 	
 	puts("Done");
 	return 0;
