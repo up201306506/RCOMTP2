@@ -151,29 +151,33 @@ int connectSocket(char * IP, int port) {
 	int sockfd;
 	struct sockaddr_in server_addr;
 
-	// server address handling
+	/* server address handling */
 	bzero((char*) &server_addr, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = inet_addr(IP); /*32 bit Internet address network byte ordered*/
 	server_addr.sin_port = htons(port); /*server TCP port must be network byte ordered */
 
-	// open an TCP socket
+	/* open an TCP socket */
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("socket()");
 		return -1;
 	}
 
-	// connect to the server
+	/* connect to the server */
 	if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr))
 			< 0) {
 		perror("connect()");
 		return -1;
 	}
 	
-	char temp[BUF_LARGERSIZE];
-	if (ftpReadMessage(sockfd, temp, sizeof(temp)) < 0 ) {
-		printf("WARNING: Couldn't Read Response to socketing.\n");
-		return -1;
+	/* Test responsiveness on FTP console port*/
+	if (port == 21) 
+	{
+		char temp[BUF_LARGERSIZE];
+		if (ftpReadMessage(sockfd, temp, sizeof(temp)) < 0 ) {
+			printf("WARNING: Couldn't Read Response to socketing.\n");
+			return -1;
+		}
 	}
 
 	return sockfd;
@@ -183,7 +187,7 @@ void disconnectSocket(int sockfd) {
 }
 
 int ftpLogin(char * user,char * password, int socket_fd){
-	char buffer[BUF_LARGERSIZE];
+	char buffer[BUF_STRINGSIZE];
 	
 	/* username */
 	sprintf(buffer, "user %s\n", user);
@@ -210,6 +214,71 @@ int ftpLogin(char * user,char * password, int socket_fd){
 	
 	return 0;
 }
+int ftpPasv(int socket_fd){
+	
+	char buffer[BUF_STRINGSIZE] = "pasv\n";
+	/* pasv */
+	if (ftpSendMessage(socket_fd, buffer, strlen(buffer))< 0) {
+		printf("WARNING: Error sending pasv\n");
+		return -1;
+	}
+	if (ftpReadMessage(socket_fd, buffer, sizeof(buffer)) <0) {
+		printf(	"WARNING: Error receiving response to pasv\n");
+		return -1;
+	}	
+	char IP[IP_STRINGSIZE];
+	int port = parsePasvResponse(buffer, IP);
+	
+	if (port < 0)
+	{
+		printf(	"WARNING: Error processing pasv's response\n");
+		return -1;
+	}
+	
+	
+	int socket_data = connectSocket(IP, port);
+	if (socket_data < 0)
+	{
+		printf("WARNING: Could not connect to data socket.\n");
+		return -1;
+	}
+	
+	return socket_data;
+	
+}
+int parsePasvResponse(char * message, char * IP){
+		
+	int IPvalues[4];
+	int Portvalues[2];
+	int temp = sscanf(message, "%*[^(](%d,%d,%d,%d,%d,%d)",&IPvalues[0],&IPvalues[1], &IPvalues[2], &IPvalues[3], &Portvalues[0], &Portvalues[1]);
+	if ( temp !=6 ) 
+	{
+		printf("WARNING: Could not parse message received from pasv\n");
+		printf("Message was: %s", message);
+		return -1;
+	}
+	
+	temp = sprintf(IP, "%d.%d.%d.%d",IPvalues[0],IPvalues[1],IPvalues[2],IPvalues[3]);
+	if (temp < 7) 
+	{
+		printf("WARNING: Failed to concatenate IP from parsed elements\n");
+		return -1;
+	}
+	
+	int port = Portvalues[0]*256 + Portvalues[1];
+	if(port < 0)
+	{
+		printf("WARNING: Something is wrong with the pasv returned port number\n");
+		return -1;
+	}
+	
+	printf("Dataport Info:\n");
+	printf("IP: %s\n", IP);
+	printf("port: %d\n", port);
+	
+	return port;
+}
+
 
 int ftpSendMessage(int socket_fd, char * message, int size){
 	int sent = write(socket_fd, message, size);

@@ -58,6 +58,18 @@ int main(int argc, char** argv){
 		return -1;
 	}
 	
+	/* Passive Mode */
+	puts("\n --- Sending Passive Mode Request --- ");
+	
+	int temp_sock= ftpPasv(data.socket_fd);
+	if (temp_sock < 0) {
+		printf("WARNING: Problem during passive mode request");
+		ftpAbort(data.socket_fd, data.data_socket_fd);
+		return -1;
+	}
+	data.data_socket_fd = temp_sock;
+	
+	
 	
 	/* Disconnect Socket */
 	disconnectSocket(data.socket_fd);

@@ -32,13 +32,17 @@ int parseURL_aux(char * buffer, char * result, char escape);
 int connectSocket(char * IP, int port);
 void disconnectSocket(int sockfd);
 
-int ftpSendMessage(int socket_fd, char * message, int size);
-int ftpReadMessage(int socket_fd, char * message, int size);
-
-
 int ftpLogin(char * user,char * password, int socket_fd);
-
+int ftpPasv(int socket_fd);
 
 void ftpAbort(int socket_fd, int socket_data);
+
+
+//Auxiliars
+int ftpSendMessage(int socket_fd, char * message, int size);
+int ftpReadMessage(int socket_fd, char * message, int size);
+int parsePasvResponse(char * message, char * IP);
+
+
 
 #endif
