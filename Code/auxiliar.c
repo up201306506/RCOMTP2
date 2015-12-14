@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <libgen.h>
 
 
 #include "auxiliar.h"
@@ -173,7 +174,7 @@ int connectSocket(char * IP, int port) {
 	/* Test responsiveness on FTP console port*/
 	if (port == 21) 
 	{
-		char temp[BUF_LARGERSIZE];
+		char temp[BUF_STRINGSIZE];
 		if (ftpReadMessage(sockfd, temp, sizeof(temp)) < 0 ) {
 			printf("WARNING: Couldn't Read Response to socketing.\n");
 			return -1;
@@ -277,6 +278,45 @@ int parsePasvResponse(char * message, char * IP){
 	printf("port: %d\n", port);
 	
 	return port;
+}
+int ftpRetr(int socket_fd, char * path_file){
+	
+	char buffer[BUF_STRINGSIZE];
+	char answer[BUF_STRINGSIZE];
+	sprintf(buffer, "retr %s\n", path_file);
+	
+	if (ftpSendMessage(socket_fd, buffer, strlen(buffer))< 0) {
+		printf("WARNING: Error sending retr command\n");
+		return -1;
+	}
+	if (ftpReadMessage(socket_fd, answer, sizeof(answer)) <0) {
+		printf(	"WARNING: Error receiving response to retr\n");
+		return -1;
+	}	
+	
+	int answer_code;
+	sscanf(answer, "%d", &answer_code);
+	
+	if(answer_code == 550)
+	{
+		printf(	"WARNING: RETR response code 5550 - File not FOund\n");
+		return -1;
+	}
+	else if (answer_code == 150)
+	{
+		/* success! */
+		char temp[32]; char * ptr = answer;
+		int i = parseURL_aux(answer, temp, '(');
+		ptr += i; 
+		
+		int filesize;
+		sscanf(ptr, "(%d bytes).", &filesize);
+		
+		return filesize;
+	}
+	
+	printf(	"WARNING: Unknown RETR response code\n");
+	return -1;
 }
 
 

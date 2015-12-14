@@ -61,15 +61,26 @@ int main(int argc, char** argv){
 	/* Passive Mode */
 	puts("\n --- Sending Passive Mode Request --- ");
 	
-	int temp_sock= ftpPasv(data.socket_fd);
-	if (temp_sock < 0) {
+	int temp= ftpPasv(data.socket_fd);
+	if (temp < 0) {
 		printf("WARNING: Problem during passive mode request");
 		ftpAbort(data.socket_fd, data.data_socket_fd);
 		return -1;
 	}
-	data.data_socket_fd = temp_sock;
+	data.data_socket_fd = temp;
+	
+	/* Sending retr */
+	puts("\n --- Sending Retrieve File Request --- ");
 	
 	
+	temp = ftpRetr(data.socket_fd, data.path);
+	if (temp < 0) {
+		printf("WARNING: Problem during retr request");
+		ftpAbort(data.socket_fd, data.data_socket_fd);
+		return -1;
+	}
+	data.filesize = temp;
+	printf("File Size: %d \n", data.filesize);
 	
 	/* Disconnect Socket */
 	disconnectSocket(data.socket_fd);
