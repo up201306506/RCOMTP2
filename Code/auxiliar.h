@@ -38,6 +38,8 @@ int ftpLogin(char * user,char * password, int socket_fd);
 int ftpPasv(int socket_fd);
 	int parsePasvResponse(char * message, char * IP);
 int ftpRetr(int socket_fd, char * path_file);
+int ftpDownload(int data_fd, int filesize, char * path);
+int ftpDisconnect(int socket_fd, int socket_data);
 
 int ftpSendMessage(int socket_fd, char * message, int size);
 int ftpReadMessage(int socket_fd, char * message, int size);

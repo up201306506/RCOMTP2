@@ -318,7 +318,49 @@ int ftpRetr(int socket_fd, char * path_file){
 	printf(	"WARNING: Unknown RETR response code\n");
 	return -1;
 }
-
+int ftpDownload(int data_fd, int filesize, char * path){
+	
+	char filename[BUF_STRINGSIZE];
+	strcpy(filename, basename(path));
+	puts (filename);
+	
+	FILE* file = fopen(filename, "w");
+	if(file == NULL){
+		printf("WARNING: fopen(%s) failed\n", filename);
+		return -1;
+	}
+	
+	char buffer[BUF_STRINGSIZE];
+	int progress = 0;
+	int bytesread;
+	
+	while(  (bytesread = read(data_fd, buffer, sizeof(buffer))) != 0  )
+	{	
+		progress += bytesread;
+		printf("Progress:  [%d]:[%d]\n",filesize ,progress);
+		
+		
+		if(bytesread < 0){
+			printf("WARNING: read() has failed in the data socket\n");
+			return -1;
+		}
+		if ( (fwrite(buffer,bytesread,sizeof(char),file)) < 0)
+		{
+			printf("WARNING: error writing to destination file\n");
+			return -1;
+		}
+	
+	}
+	fclose(file);
+	return progress;
+	
+}
+int ftpDisconnect(int socket_fd, int socket_data){
+	if(socket_fd) disconnectSocket(socket_fd);
+	if(socket_data) disconnectSocket(socket_data);
+	
+	return 0;
+}
 
 int ftpSendMessage(int socket_fd, char * message, int size){
 	int sent = write(socket_fd, message, size);

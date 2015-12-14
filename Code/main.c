@@ -69,9 +69,8 @@ int main(int argc, char** argv){
 	}
 	data.data_socket_fd = temp;
 	
-	/* Sending retr */
+	/* Send Retrieve Command */
 	puts("\n --- Sending Retrieve File Request --- ");
-	
 	
 	temp = ftpRetr(data.socket_fd, data.path);
 	if (temp < 0) {
@@ -82,9 +81,21 @@ int main(int argc, char** argv){
 	data.filesize = temp;
 	printf("File Size: %d \n", data.filesize);
 	
+	/* Download File */
+	puts("\n --- Downloading File --- ");
+	temp = ftpDownload(data.data_socket_fd, data.filesize, data.path);
+	if (temp < 0) {
+		printf("WARNING: Problem during download");
+		ftpAbort(data.socket_fd, data.data_socket_fd);
+		return -1;
+	}
+	puts("\n --- File Transfer Complete! --- ");
+	
+	
+	
 	/* Disconnect Socket */
-	disconnectSocket(data.socket_fd);
-	disconnectSocket(data.data_socket_fd);
+	puts("\n --- Disconnecting --- ");
+	ftpDisconnect(data.socket_fd, data.data_socket_fd);
 	
 	puts("Done");
 	return 0;
