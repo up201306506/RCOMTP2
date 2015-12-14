@@ -330,15 +330,16 @@ int ftpDownload(int data_fd, int filesize, char * path){
 		return -1;
 	}
 	
-	char buffer[BUF_STRINGSIZE];
+	char buffer[BUF_DOWNLOADER];
 	int progress = 0;
 	int bytesread;
 	
+	printf("Progress: ");
 	while(  (bytesread = read(data_fd, buffer, sizeof(buffer))) != 0  )
 	{	
 		progress += bytesread;
-		printf("Progress:  [%d]:[%d]\n",filesize ,progress);
-		
+		//printf("Progress:  [%d]:[%d]\n",filesize ,progress);
+		printf("|"); fflush(stdout);
 		
 		if(bytesread < 0){
 			printf("WARNING: read() has failed in the data socket\n");
@@ -356,8 +357,25 @@ int ftpDownload(int data_fd, int filesize, char * path){
 	
 }
 int ftpDisconnect(int socket_fd, int socket_data){
-	if(socket_fd) disconnectSocket(socket_fd);
-	if(socket_data) disconnectSocket(socket_data);
+	
+	char answer[BUF_STRINGSIZE];
+	if(ftpReadMessage(socket_fd, answer, BUF_STRINGSIZE) < 0){
+		printf("WARNING: Problem reading transfer complete message \n");
+		return -1;
+	} 
+	int answer_code; sscanf(answer, "%d", &answer_code);
+	if (answer_code != 226) {
+		printf("WARNING: Wrong code on transfer complete message \n");
+		return -1;
+	}
+
+	if(ftpSendMessage(socket_fd, "quit\n", strlen("quit\n")) < 0){
+		printf("WARNING: Problem sending quit command... who cares at this point? \n");
+		return -1;
+	}
+	
+	disconnectSocket(socket_fd);
+	disconnectSocket(socket_data);
 	
 	return 0;
 }

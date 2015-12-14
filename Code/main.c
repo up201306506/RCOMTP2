@@ -95,7 +95,12 @@ int main(int argc, char** argv){
 	
 	/* Disconnect Socket */
 	puts("\n --- Disconnecting --- ");
-	ftpDisconnect(data.socket_fd, data.data_socket_fd);
+	temp = ftpDisconnect(data.socket_fd, data.data_socket_fd);
+	if (temp < 0) {
+		printf("WARNING: Problem during disconnection");
+		ftpAbort(data.socket_fd, data.data_socket_fd);
+		return -1;
+	}
 	
 	puts("Done");
 	return 0;

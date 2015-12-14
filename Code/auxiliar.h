@@ -2,6 +2,7 @@
 #define _AUXILIAR
 
 #define BUF_STRINGSIZE   256
+#define BUF_DOWNLOADER	2048
 #define IP_STRINGSIZE	16
 
 
