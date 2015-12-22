@@ -334,12 +334,12 @@ int ftpDownload(int data_fd, int filesize, char * path){
 	int progress = 0;
 	int bytesread;
 	
-	printf("Progress: ");
+	//printf("Progress: ");
 	while(  (bytesread = read(data_fd, buffer, sizeof(buffer))) != 0  )
 	{	
 		progress += bytesread;
-		//printf("Progress:  [%d]:[%d]\n",filesize ,progress);
-		printf("|"); fflush(stdout);
+		printf("Progress:  [%d]:[%d]\n",filesize ,progress);
+		//printf("|"); fflush(stdout);
 		
 		if(bytesread < 0){
 			printf("WARNING: read() has failed in the data socket\n");
